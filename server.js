@@ -11,7 +11,7 @@ const credentials = require('./credentials')
 
 const PLAYLIST_ID = "PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj"
 
-let videos = [];
+
 
 const getPlayListItems = async playListID => {
     const result = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems',{
@@ -25,9 +25,10 @@ const getPlayListItems = async playListID => {
     return result.data;
 };
 let counter = 1;
+let temporalVideos = [];
 getPlayListItems(PLAYLIST_ID).then(data =>{
     data.items.forEach(element =>{
-        videos.push({
+        temporalVideos.push({
             id: counter,
             videoId: element.snippet.resourceId.videoId,
             downloaded: false
@@ -35,7 +36,7 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
         counter++
     })
 
-    console.log(videos);
+    console.log(temporalVideos);
     
 })
 
