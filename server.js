@@ -3,11 +3,15 @@ const port = 4000
 const app = express()
 const axios = require('axios')
 const fs = require('fs')
+const ytdl = require('ytdl-core')
+const cors = require('cors')
+app.use(cors())
 
 const credentials = require('./credentials')
 
-const PLAYLIST_ID = "PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj"
-
+const PLAYLIST_ID = "PLaV6FKYP2zzE5qjtiAXZiCej2BD3EJGn_"
+// PLaV6FKYP2zzE5qjtiAXZiCej2BD3EJGn_ test
+// PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj mixes
 
 
 const getPlayListItems = async playListID => {
@@ -79,9 +83,84 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
 
     console.log(temporalVideos);
     console.log(dataVideos);
+
+    //calls function to download videos
+    downloadVideos()
 })
 
 
 
 
-app.listen(port, console.log("Running at port: " + port))
+
+// console.log("Running at port: " + port)
+app.listen(port)
+
+
+async function downloadVideos(){
+    try {
+        let urlYoutube = 'https://www.youtube.com/watch?v='
+        let dataVideos = JSON.parse(fs.readFileSync('./videos.json'))
+        let title = 'audio'
+        let counter = 0;
+
+        for(let i = 0; i < dataVideos.length; i++){
+            // if the song has not been downloaded
+            if(dataVideos[i].downloaded == false){
+
+                console.log("Initiating download for video with id: " + dataVideos[i].id);
+                let url = urlYoutube + dataVideos[i].videoId
+
+                await ytdl.getBasicInfo(url,{
+                    format: 'mp4',
+                }, (err, info)=>{
+                    title = info.player_response.videoDetails.title;
+                });
+                
+                let folderDestination = './Downloads/'+title + '.mp3'
+                let writable = fs.createWriteStream(folderDestination);
+    
+                 let readable = await ytdl(url,{
+                    format: 'mp3',
+                    filter: 'audioonly'
+                }) //.pipe(writable)
+                
+    
+               readable.on('data',(chunk)=>{
+                    // console.log(`Received ${chunk.length} bytes of data.`);
+                    writable.write(chunk);
+                })
+    
+               readable.on('end', ()=>{
+                    // console.log('There will be no more data.');
+                    writable.end();
+                })
+    
+                writable.on('finish', ()=>{
+                    console.log("Done downloading video with id: " + dataVideos[i].id);
+                    counter++
+                    
+                    //update the downloaded status of the song in the json
+                    dataVideos[i].downloaded = true;
+                    fs.writeFileSync('./videos.json', JSON.stringify(dataVideos))
+
+                    //exits process when all of the videos are done being downloaded
+                    if(counter == dataVideos.length){
+                        process.exit()
+                    }
+                })
+                //if the song has already been downloaded
+            }else{
+                console.log("Video with id: " + dataVideos[i].id + ' has already been downloaded ');
+            }
+          
+
+            
+        }
+
+       
+
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
