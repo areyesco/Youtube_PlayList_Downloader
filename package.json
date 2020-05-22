@@ -1,0 +1,27 @@
+{
+  "name": "PlaylistDownloader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "credentials.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alfonso46674/Youtube_PlayList_Downloader.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alfonso46674/Youtube_PlayList_Downloader/issues"
+  },
+  "homepage": "https://github.com/alfonso46674/Youtube_PlayList_Downloader#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "express": "^4.17.1",
+    "googleapis": "^51.0.0"
+  }
+}
