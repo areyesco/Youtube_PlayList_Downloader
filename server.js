@@ -4,9 +4,7 @@ const app = express()
 const axios = require('axios')
 const fs = require('fs')
 
-// const {google} = require('googleapis')  not used since axios was implemented
-// const youtube = google.youtube('v3')   not used since axios was implemented
-
+const videosDB = require('./videos.json')
 const credentials = require('./credentials')
 
 const PLAYLIST_ID = "PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj"
@@ -26,8 +24,13 @@ const getPlayListItems = async playListID => {
 };
 let counter = 1;
 let temporalVideos = [];
+
 getPlayListItems(PLAYLIST_ID).then(data =>{
+
+    
     data.items.forEach(element =>{
+        
+        //Push every video to the temporalVideos array
         temporalVideos.push({
             id: counter,
             videoId: element.snippet.resourceId.videoId,
@@ -36,18 +39,36 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
         counter++
     })
 
-    console.log(temporalVideos);
+
+    let dataVideos = JSON.parse(fs.readFileSync('./videos.json'))
+
+    //Populate the json with the videos for the first time
+    if(dataVideos.length == 0 || undefined){
+        fs.writeFileSync('./videos.json', JSON.stringify(temporalVideos))
+    }
+
     
+    //update the json with new videos
+    // Checks the new added videos to the playlists and updates the json
+    for(let i = 0; i < temporalVideos.length; i++){
+        
+        if(dataVideos.find(v =>v.videoId == temporalVideos[i].videoId) == undefined){
+            
+            console.log("Video not included with the id : " + temporalVideos[i].id);
+            dataVideos.push({
+                id: dataVideos[dataVideos.length-1].id + 1,
+                videoId: temporalVideos[i].videoId,
+                downloaded: false
+            })
+            fs.writeFileSync('./videos.json', JSON.stringify(dataVideos))
+        }
+    }
+
+
+    console.log(dataVideos);
+    // console.log(dataVideos.find(v =>v.videoId == '_SvXQ7k4VXM') != undefined);    
 })
 
-//  youtube.playlistItems.list({
-//     key: API_KEY,
-//     part: 'id, snippet',
-//     playlistId: PLAYLIST_ID
-// }, async (err,results)=>{
-//      videos = await results.data.items;
-//     // console.log(err ? err.message : results.data.items);
-// });
 
 
 
