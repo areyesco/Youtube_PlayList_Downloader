@@ -87,8 +87,8 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
     }
    }
 
-    console.log(temporalVideos);
-    console.log(dataVideos);
+    // console.log(temporalVideos);
+    // console.log(dataVideos);
 
     //calls function to download videos
     downloadVideos()
