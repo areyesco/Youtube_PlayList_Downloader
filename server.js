@@ -9,11 +9,11 @@ app.use(cors())
 
 const credentials = require('./credentials')
 
-const PLAYLIST_ID = "PLaV6FKYP2zzFq2rGgY_zZIdSiovKxrP_m"
+const PLAYLIST_ID = "PLaV6FKYP2zzFny7QdoCEUSqwb5MQpdrbf"
 // PLaV6FKYP2zzE5qjtiAXZiCej2BD3EJGn_ test
 // PLaV6FKYP2zzFq2rGgY_zZIdSiovKxrP_m test2
 // PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj mixes
-
+// PLaV6FKYP2zzFny7QdoCEUSqwb5MQpdrbf  soul Disco
 
 
 const getPlayListItems = async playListID => {
@@ -53,7 +53,8 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
     }
 
     
-    //update the json with new videos
+   else{
+        //update the json with new videos
     // Checks the new added videos to the playlists and updates the json
     for(let i = 0; i < temporalVideos.length; i++){
         
@@ -84,9 +85,10 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
             fs.writeFileSync('./videos.json', JSON.stringify(dataVideos))
         }
     }
+   }
 
-    // console.log(temporalVideos);
-    // console.log(dataVideos);
+    console.log(temporalVideos);
+    console.log(dataVideos);
 
     //calls function to download videos
     downloadVideos()
@@ -112,7 +114,7 @@ async function downloadVideos(){
 
         for(let i = 0; i < dataVideos.length; i++){
             // if the song has not been downloaded
-            if(dataVideos[i].downloaded == false && dataVideos[i].playListID == PLAYLIST_ID){
+            if(dataVideos[i].downloaded == false){
 
                 console.log("Initiating download for: " + dataVideos[i].title);
                 let url = urlYoutube + dataVideos[i].videoId
@@ -123,6 +125,9 @@ async function downloadVideos(){
                     title = info.player_response.videoDetails.title;
                 });
                 
+                //deletes chars that are not permitted in a windows route destination name
+                title = deleteForbiddenChars(title);
+
                 let fileDestination = folderDestination + title + '.mp3'
                 let writable = fs.createWriteStream(fileDestination);
     
@@ -178,4 +183,19 @@ function getVideosToDownload(videos){
     }
 
     return counter;
+}
+
+
+function deleteForbiddenChars(title){
+    title = title.replace('?','');
+    title = title.replace('/','');
+    title = title.replace("\/",'');
+    title = title.replace(':','');
+    title = title.replace('*','');
+    title = title.replace('"','');
+    title = title.replace('<','');
+    title = title.replace('>','');
+    title = title.replace('|','');
+
+    return title
 }
