@@ -9,9 +9,11 @@ app.use(cors())
 
 const credentials = require('./credentials')
 
-const PLAYLIST_ID = "PLaV6FKYP2zzE5qjtiAXZiCej2BD3EJGn_"
+const PLAYLIST_ID = "PLaV6FKYP2zzFq2rGgY_zZIdSiovKxrP_m"
 // PLaV6FKYP2zzE5qjtiAXZiCej2BD3EJGn_ test
+// PLaV6FKYP2zzFq2rGgY_zZIdSiovKxrP_m test2
 // PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj mixes
+
 
 
 const getPlayListItems = async playListID => {
@@ -30,14 +32,14 @@ let temporalVideos = []; // array with the videos from the playlist
 
 getPlayListItems(PLAYLIST_ID).then(data =>{
 
-    
     data.items.forEach(element =>{
-        
         //Push every video to the temporalVideos array
         temporalVideos.push({
             id: counter,
+            title: element.snippet.title,
             videoId: element.snippet.resourceId.videoId,
-            downloaded: false
+            downloaded: false,
+            playlistId: PLAYLIST_ID
         })
         counter++
     })
@@ -58,11 +60,13 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
         //if there is a video in temporal that is not in the json, then it is added to the json
         if(dataVideos.find(v =>v.videoId == temporalVideos[i].videoId) == undefined){
 
-            console.log("Video not included with the id : " + temporalVideos[i].id);
+            console.log("Added video to the json: " + temporalVideos[i].title);
             dataVideos.push({
                 id: dataVideos[dataVideos.length-1].id + 1,
+                title: temporalVideos[i].title,
                 videoId: temporalVideos[i].videoId,
-                downloaded: false
+                downloaded: false,
+                playListID: PLAYLIST_ID
             })
             fs.writeFileSync('./videos.json', JSON.stringify(dataVideos))
         } 
@@ -72,7 +76,7 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
     for(let i = 0; i < dataVideos.length; i++){
          //if there is a video in the json that is not in the temporal, then it must be removed from the json
         if(!(temporalVideos.find(v => v.videoId == dataVideos[i].videoId))){
-            console.log("No longer existing video in the playlist with id: " + dataVideos[i].id);
+            console.log("No longer existing video in the playlist: " + dataVideos[i].title);
 
             //filters out the video that was removed from the temporal playlist
             dataVideos = dataVideos.filter(v => v.id != dataVideos[i].id)
@@ -81,8 +85,8 @@ getPlayListItems(PLAYLIST_ID).then(data =>{
         }
     }
 
-    console.log(temporalVideos);
-    console.log(dataVideos);
+    // console.log(temporalVideos);
+    // console.log(dataVideos);
 
     //calls function to download videos
     downloadVideos()
@@ -102,12 +106,15 @@ async function downloadVideos(){
         let dataVideos = JSON.parse(fs.readFileSync('./videos.json'))
         let title = 'audio'
         let counter = 0;
+        let folderDestination = 'C:/Users/Alponcho/Music/Canciones/SoulDisco/'
+
+        let VideosToDownload = getVideosToDownload(dataVideos)
 
         for(let i = 0; i < dataVideos.length; i++){
             // if the song has not been downloaded
-            if(dataVideos[i].downloaded == false){
+            if(dataVideos[i].downloaded == false && dataVideos[i].playListID == PLAYLIST_ID){
 
-                console.log("Initiating download for video with id: " + dataVideos[i].id);
+                console.log("Initiating download for: " + dataVideos[i].title);
                 let url = urlYoutube + dataVideos[i].videoId
 
                 await ytdl.getBasicInfo(url,{
@@ -116,8 +123,8 @@ async function downloadVideos(){
                     title = info.player_response.videoDetails.title;
                 });
                 
-                let folderDestination = './Downloads/'+title + '.mp3'
-                let writable = fs.createWriteStream(folderDestination);
+                let fileDestination = folderDestination + title + '.mp3'
+                let writable = fs.createWriteStream(fileDestination);
     
                  let readable = await ytdl(url,{
                     format: 'mp3',
@@ -136,7 +143,7 @@ async function downloadVideos(){
                 })
     
                 writable.on('finish', ()=>{
-                    console.log("Done downloading video with id: " + dataVideos[i].id);
+                    console.log("Done downloading: " + dataVideos[i].title);
                     counter++
                     
                     //update the downloaded status of the song in the json
@@ -144,23 +151,31 @@ async function downloadVideos(){
                     fs.writeFileSync('./videos.json', JSON.stringify(dataVideos))
 
                     //exits process when all of the videos are done being downloaded
-                    if(counter == dataVideos.length){
+                    if(counter == VideosToDownload){
                         process.exit()
                     }
                 })
                 //if the song has already been downloaded
             }else{
-                console.log("Video with id: " + dataVideos[i].id + ' has already been downloaded ');
+                console.log( 'Already downloaded: ' + dataVideos[i].title);
             }
           
-
-            
         }
-
-       
 
         
     } catch (error) {
         console.log(error);
     }
+}
+
+
+function getVideosToDownload(videos){
+    let counter = 0;
+    for(let i = 0; i < videos.length; i++){
+        if(videos[i].downloaded == false){
+            counter ++;
+        }
+    }
+
+    return counter;
 }
