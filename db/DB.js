@@ -16,11 +16,8 @@ class DB{
 
     async exists(query){
         let doc = await this.queryOne(query)
-        if(doc) return doc
-        else{
-            doc = false;
-            return doc;
-        }
+        if(doc) return true
+        else return false
     }
 
     async add(document){

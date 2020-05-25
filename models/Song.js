@@ -43,28 +43,26 @@ class Song extends DB{
 
         if(doc == null || doc == undefined || doc.length == 0){
             return super.add(video);
-        }else{
-            return false;
         }
+        else  return false;
+        
     }
 
     async updateVideo(videoId, video){
-        let videoToUpdate = await this.getVideoById(videoId)
-
-        if(videoToUpdate != undefined && videoToUpdate != null){
-            return await super.update({videoId}, video)
-        }else{
-            return false;
+        if(await super.exists({videoId:videoId})){
+            return await super.update(this.getVideoById(videoId),video)
         }
+        else return false
+        
     }
 
 
     async deleteVideo(videoId){
-        if(super.exists({"videoId":videoId}) != false){
-            return await super.delete(super.exists({"videoId":videoId}))
-        }else{
-            return false
+        if(await super.exists({videoId:videoId})){
+            return await super.delete(this.getVideoById(videoId))
         }
+        else return false
+        
     }
 
 };
