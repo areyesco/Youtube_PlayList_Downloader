@@ -60,17 +60,16 @@ class Song extends DB{
 
 
     async deleteVideo(videoId){
-        let videoToDelete = await this.getVideoById(videoId)
-
-        if(videoToDelete != null && videoToDelete != undefined){
-            return await super.delete(videoToDelete)
+        if(super.exists({"videoId":videoId}) != false){
+            return await super.delete(super.exists({"videoId":videoId}))
         }else{
-            return false;
+            return false
         }
     }
 
 };
 
 let song = new Song();
+
 
 module.exports = song;

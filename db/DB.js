@@ -30,9 +30,9 @@ class DB{
     }
 
     async delete(document){
-        return await this._model.findOneAndDelete(document)
-        // if(doc) return doc
-        // else return false
+        let doc = await this._model.findOneAndDelete(document)
+        if(doc) return doc
+        else return false
     }
 }
 

@@ -5,7 +5,7 @@
   "main": "credentials.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --detectOpenHandles",
     "start": "node server.js"
   },
   "repository": {
@@ -24,7 +24,9 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "googleapis": "^51.0.0",
+    "jest": "^26.0.1",
     "mongoose": "^5.9.15",
+    "uuidv4": "^6.0.9",
     "ytdl": "^1.3.0"
   }
 }
