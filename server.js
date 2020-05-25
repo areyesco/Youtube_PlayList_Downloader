@@ -1,4 +1,6 @@
 const express = require('express')
+const Song = require('./models/Song')
+
 const port = 4000
 const app = express()
 const axios = require('axios')
