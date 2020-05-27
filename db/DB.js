@@ -11,7 +11,11 @@ class DB{
     }
 
     async update(query, dataObject){
-        return await this._model.findOneAndUpdate(query, {$set: dataObject},{new: true})
+        return await this._model.findOneAndUpdate(query, {$set: dataObject},{useFindAndModify: false, new:true})
+    }
+    
+    async updateMany(query, dataObject){
+        return await this._model.updateMany(query, {$set: dataObject})
     }
 
     async exists(query){

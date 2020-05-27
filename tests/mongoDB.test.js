@@ -3,17 +3,32 @@ const Song = require('../models/Song')
 describe("MongoDB Integration", ()=>{
 
     let song1 = {
-        videoId : '123ABC',
+        videoId : 'id1',
         title : "Song Title",
         downloaded : false,
         playlistId : "playlist123"
     }
 
+    let song2 = {
+        videoId : 'id2',
+        title : "Song Title 2",
+        downloaded : false,
+        playlistId : "playlist123"
+    }
 
     test('Add song', async ()=>{
         
 
         let resp = await Song.createVideo(song1)
+        // console.log(resp);
+        expect(resp).not.toBe(false)
+
+    })
+
+    test('Add song 2', async ()=>{
+        
+
+        let resp = await Song.createVideo(song2)
         // console.log(resp);
         expect(resp).not.toBe(false)
 
@@ -36,7 +51,9 @@ describe("MongoDB Integration", ()=>{
 
     test('Update song downloaded attribute to true', async()=>{
         let resp = await Song.updateVideo(song1.videoId, {downloaded:true})
+        let totalVideos = await Song.getAllVideos()
         expect(resp.downloaded).toBe(true)
+        expect(totalVideos.length).toBe(2)
     })
 
     test('Update a non existent attribute in an existing song', async ()=>{
@@ -52,9 +69,29 @@ describe("MongoDB Integration", ()=>{
 
     })
 
+
+    test('Update manySongs downloaded status to true', async()=>{
+        await Song.updateVideo(song1.videoId, {downloaded:false})
+
+        let resp = await Song.updateVideosToDownloaded('playlist123')
+        let videos = await Song.getAllVideos()
+        expect(resp.nModified).toBe(2)
+        expect(videos[0].downloaded).toBe(true)
+        expect(videos[1].downloaded).toBe(true)
+
+
+    })
+
+
     test('Delete Song', async()=>{
         let resp = await Song.deleteVideo(song1.videoId)
         expect(resp.videoId).toBe(song1.videoId)
+        expect(resp).not.toBe(false)
+    })
+
+    test('Delete Song 2', async()=>{
+        let resp = await Song.deleteVideo(song2.videoId)
+        expect(resp.videoId).toBe(song2.videoId)
         expect(resp).not.toBe(false)
     })
 

@@ -56,6 +56,10 @@ class Song extends DB{
         
     }
 
+    async updateVideosToDownloaded(playlistId){
+            return await super.updateMany({downloaded:false, playlistId:playlistId}, {downloaded:true})
+    }
+
 
     async deleteVideo(videoId){
         if(await super.exists({videoId:videoId})){
