@@ -33,69 +33,27 @@ const getPlayListItems = async playListID => {
 getPlayListItems(PLAYLIST_ID).then( async(data) =>{
 
     //Add the songs to the DB
-    data.items.forEach(async (element) =>{
-        await Song.createVideo({
-            videoId: element.snippet.resourceId.videoId,
-            title: element.snippet.title,
-            downloaded: false,
-            playlistId: PLAYLIST_ID
-        })
+    let videos = await Song.getAllVideos()
+    console.log(data.items.length);
+    if(true){
         
-    })
-
-
-
-
-//     // json where the videos are stored with extra metadata
-//     let dataVideos = JSON.parse(fs.readFileSync('./videos.json'))
-
-//     //Populate the json with the videos for the first time
-//     if(dataVideos.length == 0 || undefined){
-//         fs.writeFileSync('./videos.json', JSON.stringify(temporalVideos))
-//     }
-
-    
-//    else{
-//         //update the json with new videos
-//     // Checks the new added videos to the playlists and updates the json
-//     for(let i = 0; i < temporalVideos.length; i++){
+        for(let i = 0; i < data.items.length; i++){
+            await Song.createVideo({
+                videoId: data.items[i].snippet.resourceId.videoId,
+                title: data.items[i].snippet.title,
+                downloaded: false,
+                playlistId: PLAYLIST_ID
+            });
+        }
         
-//         //if there is a video in temporal that is not in the json, then it is added to the json
-//         if(dataVideos.find(v =>v.videoId == temporalVideos[i].videoId) == undefined){
+    }
+    else{
+        //calls function to download videos
+        // await downloadVideos()
+    }
 
-//             console.log("Added video to the json: " + temporalVideos[i].title);
-//             dataVideos.push({
-//                 id: dataVideos[dataVideos.length-1].id + 1,
-//                 title: temporalVideos[i].title,
-//                 videoId: temporalVideos[i].videoId,
-//                 downloaded: false,
-//                 playListID: PLAYLIST_ID
-//             })
-//             fs.writeFileSync('./videos.json', JSON.stringify(dataVideos))
-//         } 
-//     }
-
-//     //Deletes videos from the json that have been removed from the temporal
-//     for(let i = 0; i < dataVideos.length; i++){
-//          //if there is a video in the json that is not in the temporal, then it must be removed from the json
-//         if(!(temporalVideos.find(v => v.videoId == dataVideos[i].videoId))){
-//             console.log("No longer existing video in the playlist: " + dataVideos[i].title);
-
-//             //filters out the video that was removed from the temporal playlist
-//             dataVideos = dataVideos.filter(v => v.id != dataVideos[i].id)
-
-//             fs.writeFileSync('./videos.json', JSON.stringify(dataVideos))
-//         }
-//     }
-//    }
-
-
-
-
-
-
-    //calls function to download videos
-   await downloadVideos()
+   
+    await downloadVideos()
 })
 
 
@@ -155,26 +113,20 @@ async function downloadVideos(){
                     console.log("Done downloading: " + dataVideos[i].title);
                     counter++
                     
-                    //update the downloaded status of the song in the json
-                    dataVideos[i].downloaded = true;
-
+                    
                     //exits process when all of the videos are done being downloaded
                     if(counter == VideosToDownload){
-                        
-                        for(video in dataVideos){ // arreglar********************
-                            console.log(video);
                             
-                            if(video.downloaded ==  true){
-                                await Song.updateVideo(video.videoId, {downloaded:true})
-                                console.log("updated: " + video.title);
-                            }
-                        }
+                       await Song.updateVideosToDownloaded(PLAYLIST_ID)
 
-                        // process.exit()
+                        process.exit()
                     }
-                })
-                //if the song has already been downloaded
-            }else{
+                });
+                
+            }
+
+            //if the song has already been downloaded
+            else{
                 console.log( 'Already downloaded: ' + dataVideos[i].title);
             }
           
@@ -205,10 +157,11 @@ function deleteForbiddenChars(title){
     title = title.replace("\/",'');
     title = title.replace(':','');
     title = title.replace('*','');
-    title = title.replace('"','');
+    title = title.replace(/"/g,'');
     title = title.replace('<','');
     title = title.replace('>','');
     title = title.replace('|','');
+
 
     return title
 }
