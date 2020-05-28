@@ -1,22 +1,28 @@
-const express = require('express')
+// const express = require('express')
 const Song = require('./models/Song')
-const port = 4000
+// const port = 4000
 const axios = require('axios')
-const app = express()
+// const app = express()
 const fs = require('fs')
 const ytdl = require('ytdl-core')
-const cors = require('cors')
-app.use(cors())
+// const cors = require('cors')
+// app.use(cors())
 
 const credentials = require('./credentials')
 
 const PLAYLIST_ID = "PLaV6FKYP2zzFny7QdoCEUSqwb5MQpdrbf"
+const PLAYLIST_NAME = 'soul Disco'
 // PLaV6FKYP2zzE5qjtiAXZiCej2BD3EJGn_ test
 // PLaV6FKYP2zzFq2rGgY_zZIdSiovKxrP_m test2
 // PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj mixes
 // PLaV6FKYP2zzFny7QdoCEUSqwb5MQpdrbf  soul Disco
 
 
+//Update the json of playlists with the id and the name
+UpdatePlaylistJson(PLAYLIST_ID, PLAYLIST_NAME)
+
+
+//obtain the songs of the playlist via axios
 const getPlayListItems = async playListID => {
     const result = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems',{
         params:{
@@ -29,7 +35,7 @@ const getPlayListItems = async playListID => {
     return result.data;
 };
 
-
+//manipulate the songs: Store them in Mongo and download them
 getPlayListItems(PLAYLIST_ID).then( async(data) =>{
 
     //Add the songs to the DB
@@ -58,10 +64,7 @@ getPlayListItems(PLAYLIST_ID).then( async(data) =>{
 
 
 
-
-
-// console.log("Running at port: " + port)
-app.listen(port)
+// app.listen(port)
 
 
 async function downloadVideos(){
@@ -70,7 +73,17 @@ async function downloadVideos(){
         let dataVideos = await Song.getAllVideos()
         let title = 'audio'
         let counter = 0;
-        let folderDestination = 'C:/Users/Alponcho/Music/Canciones/SoulDisco/'
+
+        //find the name of the playlist in the json
+        let playlists = JSON.parse(fs.readFileSync('./playlist.json'))
+        let playlistName = playlists.find(p=> p.id == PLAYLIST_ID)
+
+        //create directory if it doesnt exist
+        let folderPlaylist = `C:/Users/Alponcho/Music/Canciones/YoutubeDownloads/${playlistName.name}`
+        if(!fs.existsSync(folderPlaylist)){
+            fs.mkdirSync(folderPlaylist);
+        }
+
 
         let VideosToDownload = getVideosToDownload(dataVideos)
 
@@ -90,7 +103,7 @@ async function downloadVideos(){
                 //deletes chars that are not permitted in a windows route destination name
                 title = deleteForbiddenChars(title);
 
-                let fileDestination = folderDestination + title + '.mp3'
+                let fileDestination = folderPlaylist + '/' + title + '.mp3'
                 let writable = fs.createWriteStream(fileDestination);
     
                  let readable = await ytdl(url,{
@@ -138,7 +151,7 @@ async function downloadVideos(){
     }
 }
 
-
+//obtains the number of videos that have the value false in the attribute downloaded
 function getVideosToDownload(videos){
     let counter = 0;
     for(let i = 0; i < videos.length; i++){
@@ -150,7 +163,7 @@ function getVideosToDownload(videos){
     return counter;
 }
 
-
+//used to eliminate forbidden characters in windows filenames
 function deleteForbiddenChars(title){
     title = title.replace('?','');
     title = title.replace('/','');
@@ -164,4 +177,24 @@ function deleteForbiddenChars(title){
 
 
     return title
+}
+
+
+//adds playlists objects to the playlist json
+function UpdatePlaylistJson(idPlaylist, namePlaylist){
+    let playlists = fs.readFileSync('./playlist.json')
+    playlists = JSON.parse(playlists)
+    
+    //Add the playlist to the json if it doesnt exist yet
+    let existingPlaylist = playlists.find(p => p.id == idPlaylist);
+    if(existingPlaylist == undefined){
+        playlists.push({
+            "id":idPlaylist,
+            "name": namePlaylist
+        });
+    }
+
+    playlists = JSON.stringify(playlists)
+
+    fs.writeFileSync('./playlist.json',playlists)
 }
