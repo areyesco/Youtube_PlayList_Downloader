@@ -11,7 +11,7 @@ const ytdl = require('ytdl-core')
 const credentials = require('./credentials')
 
 const PLAYLIST_ID = "PLaV6FKYP2zzFny7QdoCEUSqwb5MQpdrbf"
-const PLAYLIST_NAME = 'soul Disco'
+const PLAYLIST_NAME = 'Soul Disco'
 // PLaV6FKYP2zzE5qjtiAXZiCej2BD3EJGn_ test
 // PLaV6FKYP2zzFq2rGgY_zZIdSiovKxrP_m test2
 // PLaV6FKYP2zzHSbavzgd5TmK1dDoLALVIj mixes
@@ -40,7 +40,7 @@ getPlayListItems(PLAYLIST_ID).then( async(data) =>{
 
     //Add the songs to the DB
     let videos = await Song.getAllVideos()
-    console.log(data.items.length);
+    console.log("Songs to be downloaded from the playlist provided: " + data.items.length);
     if(true){
         
         for(let i = 0; i < data.items.length; i++){
@@ -84,13 +84,14 @@ async function downloadVideos(){
             fs.mkdirSync(folderPlaylist);
         }
 
-
-        let VideosToDownload = getVideosToDownload(dataVideos)
+        //obtains the number of videos to be downloaded
+        let videosToDownload = getVideosToDownloadByPlaylist(dataVideos, PLAYLIST_ID)
+        console.log("VideosToDownload: " + videosToDownload);
 
         for(let i = 0; i < dataVideos.length; i++){
             // if the song has not been downloaded
-            if(dataVideos[i].downloaded == false){
-
+            if(dataVideos[i].downloaded == false && dataVideos[i].playlistId == PLAYLIST_ID){
+ 
                 console.log("Initiating download for: " + dataVideos[i].title);
                 let url = urlYoutube + dataVideos[i].videoId
 
@@ -128,7 +129,7 @@ async function downloadVideos(){
                     
                     
                     //exits process when all of the videos are done being downloaded
-                    if(counter == VideosToDownload){
+                    if(counter == videosToDownload){
                             
                        await Song.updateVideosToDownloaded(PLAYLIST_ID)
 
@@ -137,7 +138,10 @@ async function downloadVideos(){
                 });
                 
             }
-
+            //if the song is not from the selected playlist
+            else if(dataVideos[i].playlistId != PLAYLIST_ID){
+                console.log('Song not included in the playlist selected: ' + dataVideos[i].title);
+            }
             //if the song has already been downloaded
             else{
                 console.log( 'Already downloaded: ' + dataVideos[i].title);
@@ -152,10 +156,10 @@ async function downloadVideos(){
 }
 
 //obtains the number of videos that have the value false in the attribute downloaded
-function getVideosToDownload(videos){
+function getVideosToDownloadByPlaylist(videos, idPlaylist){
     let counter = 0;
     for(let i = 0; i < videos.length; i++){
-        if(videos[i].downloaded == false){
+        if(videos[i].downloaded == false && videos[i].playlistId == idPlaylist){
             counter ++;
         }
     }
