@@ -21,8 +21,6 @@
   "homepage": "https://github.com/alfonso46674/Youtube_PlayList_Downloader#readme",
   "dependencies": {
     "axios": "^0.19.2",
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
     "googleapis": "^51.0.0",
     "jest": "^26.0.1",
     "mongoose": "^5.9.15",
