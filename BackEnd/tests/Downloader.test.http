@@ -1,0 +1,11 @@
+@host = http://localhost:3000/playlist
+
+
+###
+POST {{host}}/upload
+Content-Type: application/json
+
+{
+    "id": "1234PASDRT",
+    "name":"HttpTest"
+}
