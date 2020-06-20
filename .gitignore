@@ -1,3 +1,7 @@
+<<<<<<< HEAD
 BackEnd/node_modules
+=======
+/node_modules
+>>>>>>> FrontEnd
 BackEnd/credentials.js
 BackEnd/Downloads
