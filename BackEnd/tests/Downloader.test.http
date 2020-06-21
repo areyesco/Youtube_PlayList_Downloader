@@ -1,11 +1,13 @@
-@host = http://localhost:3000/playlist
+@host = http://localhost:3000/downloader
 
 
 ###
-POST {{host}}/upload
+GET {{host}}/start
+
+###
+POST {{host}}/showSongs
 Content-Type: application/json
 
 {
-    "id": "1234PASDRT",
-    "name":"HttpTest"
+    "playlistID":"PLaV6FKYP2zzFny7QdoCEUSqwb5MQpdrbf"
 }
